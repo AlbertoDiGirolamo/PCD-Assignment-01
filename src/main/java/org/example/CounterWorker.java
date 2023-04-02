@@ -4,14 +4,30 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-public class Worker extends Thread {
+public class CounterWorker extends Worker {
 	
 	private Random rand;
 	private Map<File, Integer> fileAndLines = new HashMap<>();
+	private List<File> files = new ArrayList<>();
 	
-	public Worker(List<File> files) throws FileNotFoundException {
+	public CounterWorker(List<File> files){
+		this.files = files;
+		/*try {
+			Random rnd = new Random();
+			sleep(rnd.nextInt(10000));
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}*/
+
+	}
+	public void run(){
 		for(File f : files){
-			Scanner sc = new Scanner(f);
+			Scanner sc = null;
+			try {
+				sc = new Scanner(f);
+			} catch (FileNotFoundException e) {
+				throw new RuntimeException(e);
+			}
 			int count = 0;
 			while(sc.hasNextLine()) {
 				sc.nextLine();
@@ -20,7 +36,6 @@ public class Worker extends Thread {
 			sc.close();
 			fileAndLines.put(f, count);
 		}
-
 	}
 
 	public Map<File, Integer> getFileAndLines(){
