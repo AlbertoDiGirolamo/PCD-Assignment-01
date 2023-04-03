@@ -5,12 +5,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
-class ConsumerNameFile extends Thread {
+class WorkerCountLines extends Thread {
 
-	private IBoundedBuffer<File> buffer;
+	private IBoundedBufferFileFind<File> buffer;
 	private IBoundedBuffer<Pair<File, Integer>> bufferCounter;
 	
-	public ConsumerNameFile(IBoundedBuffer<File> buffer, IBoundedBuffer<Pair<File, Integer>> bufferCounter){
+	public WorkerCountLines(IBoundedBufferFileFind<File> buffer, IBoundedBuffer<Pair<File, Integer>> bufferCounter){
 		this.buffer = buffer;
 		this.bufferCounter = bufferCounter;
 	}
@@ -41,6 +41,7 @@ class ConsumerNameFile extends Thread {
 		sc.close();
 		try {
 			bufferCounter.put(new Pair<>(file, count));
+			//System.out.println(file.getName()+" : "+count);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}

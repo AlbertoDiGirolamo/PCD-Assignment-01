@@ -1,23 +1,35 @@
 package org.example;
 
-import java.util.LinkedList;
+import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+
+import static java.util.Collections.reverseOrder;
+import static java.util.Comparator.comparing;
 
 public class BoundedBuffer<Item> implements IBoundedBuffer<Item> {
-
-	private LinkedList<Item> buffer;
+	private TreeSet<Item> buffer;
 	private int maxSize;
 	private Lock mutex;
 	private Condition notEmpty, notFull;
+	private Comparator comparator;
 
 	public BoundedBuffer(int size) {
-		buffer = new LinkedList<Item>();
+		buffer = new TreeSet<>();
 		maxSize = size;
 		mutex = new ReentrantLock();
 		notEmpty = mutex.newCondition();
 		notFull = mutex.newCondition();
+	}
+	public BoundedBuffer(int size, Comparator comparator) {
+		buffer = new TreeSet<>(comparator);
+		maxSize = size;
+		mutex = new ReentrantLock();
+		notEmpty = mutex.newCondition();
+		notFull = mutex.newCondition();
+		this.comparator = comparator;
 	}
 
 	public void put(Item item) throws InterruptedException {
@@ -26,32 +38,33 @@ public class BoundedBuffer<Item> implements IBoundedBuffer<Item> {
 			if (isFull()) {
 				notFull.await();
 			}
-			buffer.addLast(item);
+			buffer.add(item);
 			notEmpty.signal();
 		} finally {
 			mutex.unlock();
 		}
 	}
 
-	public Item get() throws InterruptedException {
+
+	public List<Item> get(int limit) throws InterruptedException {
 		try {
 			mutex.lock();
 			if (isEmpty()) {
 				notEmpty.await();
 			}
-			Item item = buffer.removeFirst();
+			List<Item> items = new LinkedList<>();
+			items = buffer.stream().limit(limit).collect(Collectors.toList());
 			notFull.signal();
-			return item;
+			return items;
 		} finally {
 			mutex.unlock();
 		}
 	}
-
 	private boolean isFull() {
 		return buffer.size() == maxSize;
 	}
-
 	private boolean isEmpty() {
 		return buffer.size() == 0;
 	}
+
 }

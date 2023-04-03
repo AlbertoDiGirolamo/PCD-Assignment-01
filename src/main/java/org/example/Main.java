@@ -14,9 +14,9 @@ import java.util.stream.Stream;
 
 public class Main {
 
-    public static final int NUMBEROFWORKERS = 5;
-    public static void main(String[] args) throws IOException {
-        MasterThread masterThread = new MasterThread(NUMBEROFWORKERS);
+    public static final int NUMBER_OF_WORKERS = 5;
+    public static void main(String[] args) {
+        MasterThread masterThread = new MasterThread(NUMBER_OF_WORKERS);
         masterThread.start();
     }
 
