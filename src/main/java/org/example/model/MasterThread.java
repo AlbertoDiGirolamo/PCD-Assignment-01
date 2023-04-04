@@ -1,4 +1,6 @@
-package org.example;
+package org.example.model;
+
+import org.example.utils.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -94,6 +96,7 @@ public class MasterThread extends Thread{
                 }
             }
         }
+        System.out.println(filesInRange);
 
 
 

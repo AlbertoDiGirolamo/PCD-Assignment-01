@@ -1,4 +1,4 @@
-package org.example;
+package org.example.utils;
 
 import java.util.*;
 import java.util.concurrent.locks.Condition;

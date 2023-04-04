@@ -1,5 +1,9 @@
-package org.example;
+package org.example.model;
 
+
+import org.example.utils.IBufferCountLines;
+import org.example.utils.IBufferFileFind;
+import org.example.utils.Pair;
 
 import java.io.File;
 import java.io.FileNotFoundException;
