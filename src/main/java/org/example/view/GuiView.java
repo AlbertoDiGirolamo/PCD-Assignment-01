@@ -119,8 +119,6 @@ public class GuiView implements View{
         this.frame.setVisible(true);
     }
 
-
-
     @Override
     public void setController(Controller controller) {
         this.controller = controller;
@@ -129,7 +127,7 @@ public class GuiView implements View{
     @Override
     public void resultsUpdated() throws InterruptedException {
         DefaultListModel<Pair<File, Integer>> rankingModel = new DefaultListModel<>();
-        rankingModel.addAll(this.controller.getResult().getTopN(Integer.parseInt(txtNFiles.getText())));
+        rankingModel.addAll(this.controller.getResult().getRanking());
 
         SwingUtilities.invokeLater(() -> rankingList.setModel(rankingModel));
     }

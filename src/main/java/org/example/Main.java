@@ -18,6 +18,8 @@ public class Main {
         final View view = new GuiView();
         final Controller controller = new ControllerImpl(model, view);
 
+        model.addObserver(view);
+
         //controller.start(NUMBER_OF_WORKERS);
 
 

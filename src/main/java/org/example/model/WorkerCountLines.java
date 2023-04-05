@@ -1,8 +1,7 @@
 package org.example.model;
 
 
-import org.example.utils.IBufferCountLines;
-import org.example.utils.IBufferFileFind;
+import org.example.utils.BufferSynchronized;
 import org.example.utils.Pair;
 
 import java.io.File;
@@ -11,10 +10,10 @@ import java.util.Scanner;
 
 class WorkerCountLines extends Thread {
 
-	private final IBufferFileFind<File> bufferFindFile;
-	private final IBufferCountLines<Pair<File, Integer>> bufferCounter;
+	private final BufferSynchronized<File> bufferFindFile;
+	private final BufferSynchronized<Pair<File, Integer>> bufferCounter;
 	
-	public WorkerCountLines(IBufferFileFind<File> bufferFindFile, IBufferCountLines<Pair<File, Integer>> bufferCounter){
+	public WorkerCountLines(BufferSynchronized<File> bufferFindFile, BufferSynchronized<Pair<File, Integer>> bufferCounter){
 		this.bufferFindFile = bufferFindFile;
 		this.bufferCounter = bufferCounter;
 	}

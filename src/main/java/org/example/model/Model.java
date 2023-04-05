@@ -1,16 +1,17 @@
 package org.example.model;
 
-import org.example.utils.BufferCountLines;
+import org.example.utils.BufferSynchronized;
 import org.example.utils.Pair;
+import org.example.utils.ResultsImpl;
 
 import java.io.File;
 import java.util.List;
 
 public interface Model {
+    void addObserver(ModelObserver observer);
     void notifyObservers(ModelObserver.Event event) throws InterruptedException;
 
-    BufferCountLines<Pair<File, Integer>> getResult();
-    void addResult(Pair<File, Integer> result) throws InterruptedException;
-    List<Pair<File, Integer>> getRanking(int topN);
+    ResultsImpl getResult();
+    void setup(int limit);
 
 }

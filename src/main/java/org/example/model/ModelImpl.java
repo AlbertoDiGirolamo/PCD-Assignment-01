@@ -1,7 +1,9 @@
 package org.example.model;
 
-import org.example.utils.BufferCountLines;
+import org.example.utils.BufferSynchronized;
+import org.example.utils.BufferSynchronizedImpl;
 import org.example.utils.Pair;
+import org.example.utils.ResultsImpl;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,8 +16,18 @@ import static java.util.Comparator.comparing;
 
 public class ModelImpl implements Model{
     private final List<ModelObserver> observers = new LinkedList<>();
-    final Comparator<Pair<String, Integer>> comparator = reverseOrder(comparing(Pair::getY));
-    private BufferCountLines<Pair<File, Integer>> files = new BufferCountLines<>(comparator);
+    private ResultsImpl results;
+
+    public void setup(int limit) {
+        this.results = new ResultsImpl(limit);
+    }
+
+    @Override
+    public void addObserver(ModelObserver observer){
+        this.observers.add(observer);
+    }
+
+
     @Override
     public void notifyObservers(ModelObserver.Event event) throws InterruptedException {
         for(ModelObserver observer : this.observers){
@@ -27,17 +39,8 @@ public class ModelImpl implements Model{
     }
 
     @Override
-    public BufferCountLines<Pair<File, Integer>> getResult() {
-        return files;
+    public ResultsImpl getResult() {
+        return results;
     }
 
-    @Override
-    public void addResult(Pair<File, Integer> result) throws InterruptedException {
-        files.put(result);
-    }
-
-    @Override
-    public List<Pair<File, Integer>> getRanking(int topN) {
-        return null;
-    }
 }

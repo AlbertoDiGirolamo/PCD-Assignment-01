@@ -18,25 +18,18 @@ import static java.util.Comparator.comparing;
 public class MasterThread extends Thread{
 
     private final int nWorkers;
-
     private final int NI = 5;
     private final int MAXL = 1000;
     private final int N = 10;
 
-    IBufferFileFind<File> bufferNameFile;
-    IBufferCountLines<Pair<File, Integer>> bufferCounter;
+    BufferSynchronized<File> bufferNameFile;
+    BufferSynchronized<Pair<File, Integer>> bufferCounter;
     int nConsumers = 5;
-
-    static Map<Pair<Integer, Integer>, List<Integer>> filesInRange = new HashMap<>();
-    private  List<Pair<File, Integer>> rankingList = new ArrayList<>();
-
     private Controller controller;
-
 
     public MasterThread(int nWorkers, Controller controller) {
         this.nWorkers = nWorkers;
         this.controller = controller;
-
     }
 
     @Override
@@ -53,8 +46,7 @@ public class MasterThread extends Thread{
             throw new RuntimeException(e);
         }
 
-        bufferNameFile = new BufferFileFind<>();
-
+        bufferNameFile = new BufferSynchronizedImpl<>();
         for(Object o : filesPath){
             try {
                 bufferNameFile.put(new File(o.toString()));
@@ -63,16 +55,15 @@ public class MasterThread extends Thread{
             }
         }
 
-        final Comparator<Pair<String, Integer>> comparator = reverseOrder(comparing(Pair::getY));
-        bufferCounter = new BufferCountLines<>(comparator);
+        bufferCounter = new BufferSynchronizedImpl<>();
 
-        for (int i = 0; i < nConsumers; i++){
+        for (int i = 0; i < nWorkers; i++){
             new WorkerCountLines(bufferNameFile, bufferCounter).start();
         }
 
         for(int i = 0; i < filesPath.size(); i++){
-            Pair<File, Integer> result = bufferCounter.getItem();
             try {
+                Pair<File, Integer> result = bufferCounter.get();
                 this.controller.addResult(result);
                 this.controller.notifyObservers(ModelObserver.Event.RESULT_UPDATED);
 
@@ -81,39 +72,5 @@ public class MasterThread extends Thread{
             }
         }
 
-
-        int range = MAXL / (NI - 1);
-        int indexRange=0;
-        for(int i = 0; i < NI -1; i++){
-            filesInRange.put(new Pair<>(indexRange, indexRange+range -1), new ArrayList<>());
-            indexRange += range;
-        }
-        filesInRange.put(new Pair<>(indexRange, Integer.MAX_VALUE), new ArrayList<>());
-
-        for(int i = 0; i < filesPath.size(); i++){
-            Integer countLinesFile = bufferCounter.getItem().getY();
-            for(Pair<Integer, Integer> p : filesInRange.keySet()){
-                if(countLinesFile > p.getX() && countLinesFile < p.getY()){
-                    filesInRange.get(p).add(countLinesFile);
-                }
-            }
-        }
-        System.out.println(filesInRange);
-
-
-
-
-
     }
-    public List<Pair<File, Integer>> getRankingList() {
-        for(Pair<File, Integer> p : rankingList){
-            System.out.println(p.getX()+" "+p.getY());
-        }
-        return rankingList;
-    }
-
-
-
-
-
 }

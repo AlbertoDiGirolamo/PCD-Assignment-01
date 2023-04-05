@@ -3,8 +3,9 @@ package org.example.controller;
 import org.example.model.MasterThread;
 import org.example.model.Model;
 import org.example.model.ModelObserver;
-import org.example.utils.BufferCountLines;
+import org.example.utils.BufferSynchronized;
 import org.example.utils.Pair;
+import org.example.utils.ResultsImpl;
 import org.example.view.View;
 
 import java.io.File;
@@ -24,14 +25,14 @@ public class ControllerImpl implements Controller{
 
     @Override
     public void start(int numberOfWorkers, int topN) {
+        this.model.setup(topN);
         masterThread = new MasterThread(numberOfWorkers, this);
-        //masterThread.run();
         masterThread.start();
     }
 
     @Override
-    public List<Pair<File, Integer>> getRankingList() {
-        return masterThread.getRankingList();
+    public ResultsImpl getRankingList() {
+        return this.model.getResult();
     }
     @Override
     public void processEvent(Runnable runnable){
@@ -44,13 +45,12 @@ public class ControllerImpl implements Controller{
     }
 
     @Override
-    public BufferCountLines<Pair<File, Integer>> getResult() {
+    public ResultsImpl getResult() {
         return this.model.getResult();
     }
 
-    @Override
-    public void addResult(Pair<File, Integer> result) throws InterruptedException {
-        this.model.addResult(result);
+    public void addResult(Pair<File, Integer> result) {
+        this.model.getResult().add(result);
     }
 
 
