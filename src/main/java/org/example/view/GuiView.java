@@ -10,11 +10,12 @@ import java.io.File;
 
 public class GuiView implements View{
     private Controller controller;
-    private JList<Pair<File, Integer>> rankingList;
+    private JList<Pair<File, Integer>> rankingList = new JList<>();
     private final JList<String> distributionList = new JList<>();
     private final JFrame frame = new JFrame();
     private final JButton btnStart = new JButton("Start");
     private final JButton btnStop = new JButton("Stop");
+    final JTextField txtNFiles;
     final JPanel resultsPanel = new JPanel();
 
     public GuiView() {
@@ -40,7 +41,7 @@ public class GuiView implements View{
 
         final JLabel lblNFiles = new JLabel("Number of files: ");
         //lblNFiles.setBounds(50, 110, 200, 30);
-        final JTextField txtNFiles = new JTextField(3);
+        txtNFiles = new JTextField(3);
         txtNFiles.setBounds(50, 140, 200, 30);
         txtDirectory.setMinimumSize(txtDirectory.getPreferredSize());
 
@@ -80,46 +81,21 @@ public class GuiView implements View{
             this.distributionList.setModel(new DefaultListModel<>());*/
 
 
-            this.controller.start(5,Integer.parseInt(txtNFiles.getText()));
+            //this.controller.start(5,Integer.parseInt(txtNFiles.getText()));
+            this.controller.processEvent(() -> {
+                this.controller.start(5,Integer.parseInt(txtNFiles.getText()));
+            });
 
-            DefaultListModel listModel;
-            listModel = new DefaultListModel();
+            this.rankingList.setModel(new DefaultListModel<>());
 
-            for (Pair<File, Integer> p : this.controller.getRankingList()){
-                listModel.addElement(p.getX()+" "+ p.getY());
-            }
-            rankingList= new JList(listModel);
 
             this.rankingList.setSize(100, 50);
             this.rankingList.setAutoscrolls(true);
 
             resultsPanel.add(rankingList);
-
-            /*this.controller.processEvent(() -> {
-                this.controller.start(new SetupInfo(
-                        txtDirectory.getText(),
-                        Integer.parseInt(txtNFiles.getText()),
-                        Integer.parseInt(txtIntervals.getText()),
-                        Integer.parseInt(txtLastInterval.getText())), N_WORKERS);
-            });
-        */});
-
-/*
-        btnStop.addActionListener(e -> {
-            this.btnStart.setEnabled(true);
-            this.btnStop.setEnabled(true);
-
-            this.controller.processEvent(() -> {
-                this.controller.stopExecution();
-            });
         });
-*/
-
-
 
         this.distributionList.setSize(100, 50);
-
-
 
         inputPanel.add(lblDirectory);
         inputPanel.add(txtDirectory);
@@ -133,7 +109,6 @@ public class GuiView implements View{
         controlPanel.add(btnStart);
         controlPanel.add(btnStop);
 
-
         resultsPanel.add(distributionList);
 
         mainPanel.add(inputPanel);
@@ -144,8 +119,18 @@ public class GuiView implements View{
         this.frame.setVisible(true);
     }
 
+
+
     @Override
     public void setController(Controller controller) {
         this.controller = controller;
+    }
+
+    @Override
+    public void resultsUpdated() throws InterruptedException {
+        DefaultListModel<Pair<File, Integer>> rankingModel = new DefaultListModel<>();
+        rankingModel.addAll(this.controller.getResult().getTopN(Integer.parseInt(txtNFiles.getText())));
+
+        SwingUtilities.invokeLater(() -> rankingList.setModel(rankingModel));
     }
 }

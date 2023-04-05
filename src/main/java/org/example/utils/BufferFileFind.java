@@ -1,6 +1,7 @@
 package org.example.utils;
 
 import java.util.LinkedList;
+import java.util.Optional;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -33,6 +34,9 @@ public class BufferFileFind<Item> implements IBufferFileFind<Item> {
             if(isEmpty()){
                 notEmpty.await();
             }
+            if (buffer.isEmpty()){
+                return null;
+            }
 
             Item item = buffer.removeFirst();
 
@@ -42,6 +46,12 @@ public class BufferFileFind<Item> implements IBufferFileFind<Item> {
         }
     }
     private boolean isEmpty(){
-        return buffer.size() == 0;
+        try{
+            mutex.lock();
+            return this.buffer.isEmpty();
+        }finally {
+            mutex.unlock();
+        }
+
     }
 }

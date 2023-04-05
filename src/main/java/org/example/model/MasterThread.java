@@ -1,5 +1,6 @@
 package org.example.model;
 
+import org.example.controller.Controller;
 import org.example.utils.*;
 
 import java.io.File;
@@ -28,12 +29,14 @@ public class MasterThread extends Thread{
 
     static Map<Pair<Integer, Integer>, List<Integer>> filesInRange = new HashMap<>();
     private  List<Pair<File, Integer>> rankingList = new ArrayList<>();
-    private int topN;
+
+    private Controller controller;
 
 
-    public MasterThread(int nWorkers, int topN) {
+    public MasterThread(int nWorkers, Controller controller) {
         this.nWorkers = nWorkers;
-        this.topN = topN;
+        this.controller = controller;
+
     }
 
     @Override
@@ -50,11 +53,7 @@ public class MasterThread extends Thread{
             throw new RuntimeException(e);
         }
 
-
         bufferNameFile = new BufferFileFind<>();
-
-        final Comparator<Pair<String, Integer>> comparator = reverseOrder(comparing(Pair::getY));
-        bufferCounter = new BufferCountLines<>(comparator, filesPath.size());
 
         for(Object o : filesPath){
             try {
@@ -64,24 +63,24 @@ public class MasterThread extends Thread{
             }
         }
 
+        final Comparator<Pair<String, Integer>> comparator = reverseOrder(comparing(Pair::getY));
+        bufferCounter = new BufferCountLines<>(comparator);
+
         for (int i = 0; i < nConsumers; i++){
             new WorkerCountLines(bufferNameFile, bufferCounter).start();
         }
 
+        for(int i = 0; i < filesPath.size(); i++){
+            Pair<File, Integer> result = bufferCounter.getItem();
+            try {
+                this.controller.addResult(result);
+                this.controller.notifyObservers(ModelObserver.Event.RESULT_UPDATED);
 
-        try {
-            Thread.sleep(5000);
-
-            rankingList = bufferCounter.getTopN(topN);
-
-
-
-            for(Pair<File, Integer> p : rankingList){
-                System.out.println(p.getX()+" "+p.getY());
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
+
 
         int range = MAXL / (NI - 1);
         int indexRange=0;
@@ -107,6 +106,9 @@ public class MasterThread extends Thread{
 
     }
     public List<Pair<File, Integer>> getRankingList() {
+        for(Pair<File, Integer> p : rankingList){
+            System.out.println(p.getX()+" "+p.getY());
+        }
         return rankingList;
     }
 

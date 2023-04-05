@@ -14,19 +14,15 @@ public class BufferCountLines<Item> implements IBufferCountLines<Item> {
 	private LinkedList<Item> bufferRange;
 	private Lock mutex;
 	private Comparator comparator;
-	//private Condition isFull;
 	private Condition notEmpty, isFull;
-	private int sizeMax;
 
-
-	public BufferCountLines(Comparator comparator, int size) {
+	public BufferCountLines(Comparator comparator) {
 		bufferTopN = new TreeSet<>(comparator);
 		mutex = new ReentrantLock();
 		this.comparator = comparator;
 		notEmpty = mutex.newCondition();
 		isFull = mutex.newCondition();
 		bufferRange = new LinkedList<>();
-		this.sizeMax = size;
 
 	}
 
@@ -36,6 +32,7 @@ public class BufferCountLines<Item> implements IBufferCountLines<Item> {
 
 			bufferTopN.add(item);
 			bufferRange.add(item);
+			notEmpty.signal();
 
 		} finally {
 			mutex.unlock();
@@ -45,8 +42,8 @@ public class BufferCountLines<Item> implements IBufferCountLines<Item> {
 
 	public List<Item> getTopN(int limit) throws InterruptedException {
 		try {
-			mutex.lock();
 
+			mutex.lock();
 			return bufferTopN.stream().limit(limit).collect(Collectors.toList());
 
 		} finally {

@@ -2,6 +2,8 @@ package org.example.controller;
 
 import org.example.model.MasterThread;
 import org.example.model.Model;
+import org.example.model.ModelObserver;
+import org.example.utils.BufferCountLines;
 import org.example.utils.Pair;
 import org.example.view.View;
 
@@ -22,13 +24,33 @@ public class ControllerImpl implements Controller{
 
     @Override
     public void start(int numberOfWorkers, int topN) {
-        masterThread = new MasterThread(numberOfWorkers, topN);
+        masterThread = new MasterThread(numberOfWorkers, this);
+        //masterThread.run();
         masterThread.start();
     }
 
     @Override
     public List<Pair<File, Integer>> getRankingList() {
         return masterThread.getRankingList();
+    }
+    @Override
+    public void processEvent(Runnable runnable){
+        new Thread(runnable).start();
+    }
+
+    @Override
+    public void notifyObservers(ModelObserver.Event event) throws InterruptedException {
+        this.model.notifyObservers(event);
+    }
+
+    @Override
+    public BufferCountLines<Pair<File, Integer>> getResult() {
+        return this.model.getResult();
+    }
+
+    @Override
+    public void addResult(Pair<File, Integer> result) throws InterruptedException {
+        this.model.addResult(result);
     }
 
 
