@@ -18,7 +18,7 @@ public class Main {
         final View view = new GuiView();
         final Controller controller = new ControllerImpl(model, view);
 
-        controller.start(NUMBER_OF_WORKERS);
+        //controller.start(NUMBER_OF_WORKERS);
 
 
     }

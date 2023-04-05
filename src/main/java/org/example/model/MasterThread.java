@@ -27,10 +27,13 @@ public class MasterThread extends Thread{
     int nConsumers = 5;
 
     static Map<Pair<Integer, Integer>, List<Integer>> filesInRange = new HashMap<>();
+    private  List<Pair<File, Integer>> rankingList = new ArrayList<>();
+    private int topN;
 
 
-    public MasterThread(int nWorkers) {
+    public MasterThread(int nWorkers, int topN) {
         this.nWorkers = nWorkers;
+        this.topN = topN;
     }
 
     @Override
@@ -69,11 +72,11 @@ public class MasterThread extends Thread{
         try {
             Thread.sleep(5000);
 
-            List<Pair<File, Integer>> pair = bufferCounter.getTopN(10);
+            rankingList = bufferCounter.getTopN(topN);
 
 
 
-            for(Pair<File, Integer> p : pair){
+            for(Pair<File, Integer> p : rankingList){
                 System.out.println(p.getX()+" "+p.getY());
             }
         } catch (InterruptedException e) {
@@ -101,7 +104,12 @@ public class MasterThread extends Thread{
 
 
 
+
     }
+    public List<Pair<File, Integer>> getRankingList() {
+        return rankingList;
+    }
+
 
 
 

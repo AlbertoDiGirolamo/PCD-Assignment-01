@@ -1,6 +1,7 @@
 package org.example.view;
 
 import org.example.controller.Controller;
+import org.example.controller.ControllerImpl;
 import org.example.utils.Pair;
 
 import javax.swing.*;
@@ -9,72 +10,142 @@ import java.io.File;
 
 public class GuiView implements View{
     private Controller controller;
-    private final JList<Pair<File, Integer>> rankingList = new JList<>();
+    private JList<Pair<File, Integer>> rankingList;
     private final JList<String> distributionList = new JList<>();
     private final JFrame frame = new JFrame();
+    private final JButton btnStart = new JButton("Start");
+    private final JButton btnStop = new JButton("Stop");
+    final JPanel resultsPanel = new JPanel();
 
     public GuiView() {
-        JFrame frame = new JFrame("Assignment 1");
-
-        frame.setSize(800, 800);
-        frame.setLocation(100, 150);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setDefaultLookAndFeelDecorated(true);
+        final JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        this.frame.setTitle("Source Tracker");
+        this.frame.setSize(800, 500);
+        this.frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        this.frame.setLocationRelativeTo(null);
+        this.frame.setResizable(false);
 
         final JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new FlowLayout());
 
+        final JPanel controlPanel = new JPanel();
+        controlPanel.setLayout(new FlowLayout());
 
-        JLabel lblPath = new JLabel("Path: ");
-        JTextField txtPath = new JTextField();
+        final JLabel lblDirectory = new JLabel("Start directory: ");
+        //lblDirectory.setBounds(50, 50, 200, 30);
+        final JTextField txtDirectory = new JTextField(20);
+        txtDirectory.setMinimumSize(txtDirectory.getPreferredSize());
+        txtDirectory.setBounds(50, 80, 200, 30);
 
-        JLabel lblNI = new JLabel("Numero intervalli: ");
-        JTextField txtNI = new JTextField();
+        final JLabel lblNFiles = new JLabel("Number of files: ");
+        //lblNFiles.setBounds(50, 110, 200, 30);
+        final JTextField txtNFiles = new JTextField(3);
+        txtNFiles.setBounds(50, 140, 200, 30);
+        txtDirectory.setMinimumSize(txtDirectory.getPreferredSize());
 
-        JLabel lblMaxL = new JLabel("Numero massimo di linee: ");
-        JTextField txtMaxL = new JTextField();
+        final JLabel lblIntervals = new JLabel("Number of intervals: ");
+        final JTextField txtIntervals = new JTextField(3);
+        txtDirectory.setMinimumSize(txtDirectory.getPreferredSize());
 
-        JLabel lblN = new JLabel("Top n: ");
-        JTextField txtN = new JTextField();
-
-
-
-        JButton btnStart = new JButton("Start");
-        JButton btnStop = new JButton("Stop");
-
-        JLabel lblN3 = new JLabel("");
-
-        lblPath.setBounds(50, 50, 200,30);
-        txtPath.setBounds(50, 100, 200,30);
-        lblNI.setBounds(50, 150, 200,30);
-        txtNI.setBounds(50, 200, 200,30);
-        lblMaxL.setBounds(50, 250, 200,30);
-        txtMaxL.setBounds(50, 300, 200,30);
-        lblN.setBounds(50, 350, 200,30);
-        txtN.setBounds(50, 400, 200,30);
+        final JLabel lblLastInterval = new JLabel("Last interval: ");
+        final JTextField txtLastInterval = new JTextField(3);
+        txtDirectory.setMinimumSize(txtDirectory.getPreferredSize());
 
 
-        btnStart.setBounds(50, 500, 200,30);
-        btnStop.setBounds(50, 550, 200,30);
+        btnStop.setEnabled(false);
 
-        lblN3.setBounds(50, 600, 200,30);
+        btnStart.addActionListener(e -> {
+            /*if(txtDirectory.getText().isEmpty()){
+                Toast.makeToast(frame, "Insert path of initial directory.", new Color(255,0,0,170), 3);
+                return;
+            }
+            if(txtNFiles.getText().isEmpty() || !Strings.isNumeric(txtNFiles.getText()) || Integer.parseInt(txtNFiles.getText()) <= 0){
+                Toast.makeToast(frame, "Insert correct number of files.", new Color(255,0,0,170), 3);
+                return;
+            }
+            if(txtIntervals.getText().isEmpty() || !Strings.isNumeric(txtIntervals.getText()) || Integer.parseInt(txtNFiles.getText()) <= 0){
+                Toast.makeToast(frame, "Insert correct number of intervals.", new Color(255,0,0,170), 3);
+                return;
+            }
+            if(txtLastInterval.getText().isEmpty() || !Strings.isNumeric(txtLastInterval.getText()) || Integer.parseInt(txtNFiles.getText()) <= 0){
+                Toast.makeToast(frame, "Insert correct last interval value.", new Color(255,0,0,170), 3);
+                return;
+            }*/
+
+            btnStart.setEnabled(false);
+            btnStop.setEnabled(true);
+
+            /*this.rankingList.setModel(new DefaultListModel<>());
+            this.distributionList.setModel(new DefaultListModel<>());*/
 
 
-        frame.add(lblPath);
-        frame.add(txtPath);
-        frame.add(lblNI);
-        frame.add(txtNI);
-        frame.add(lblMaxL);
-        frame.add(txtMaxL);
-        frame.add(lblN);
-        frame.add(txtN);
-        frame.add(lblN3);
-        frame.add(btnStart);
-        frame.add(btnStop);
+            this.controller.start(5,Integer.parseInt(txtNFiles.getText()));
+
+            DefaultListModel listModel;
+            listModel = new DefaultListModel();
+
+            for (Pair<File, Integer> p : this.controller.getRankingList()){
+                listModel.addElement(p.getX()+" "+ p.getY());
+            }
+            rankingList= new JList(listModel);
+
+            this.rankingList.setSize(100, 50);
+            this.rankingList.setAutoscrolls(true);
+
+            resultsPanel.add(rankingList);
+
+            /*this.controller.processEvent(() -> {
+                this.controller.start(new SetupInfo(
+                        txtDirectory.getText(),
+                        Integer.parseInt(txtNFiles.getText()),
+                        Integer.parseInt(txtIntervals.getText()),
+                        Integer.parseInt(txtLastInterval.getText())), N_WORKERS);
+            });
+        */});
+
+/*
+        btnStop.addActionListener(e -> {
+            this.btnStart.setEnabled(true);
+            this.btnStop.setEnabled(true);
+
+            this.controller.processEvent(() -> {
+                this.controller.stopExecution();
+            });
+        });
+*/
 
 
-        frame.setVisible(true);
-        frame.setLayout(null);
 
+        this.distributionList.setSize(100, 50);
+
+
+
+        inputPanel.add(lblDirectory);
+        inputPanel.add(txtDirectory);
+        inputPanel.add(lblNFiles);
+        inputPanel.add(txtNFiles);
+        inputPanel.add(lblIntervals);
+        inputPanel.add(txtIntervals);
+        inputPanel.add(lblLastInterval);
+        inputPanel.add(txtLastInterval);
+
+        controlPanel.add(btnStart);
+        controlPanel.add(btnStop);
+
+
+        resultsPanel.add(distributionList);
+
+        mainPanel.add(inputPanel);
+        mainPanel.add(controlPanel);
+        mainPanel.add(resultsPanel);
+
+        this.frame.setContentPane(mainPanel);
+        this.frame.setVisible(true);
+    }
+
+    @Override
+    public void setController(Controller controller) {
+        this.controller = controller;
     }
 }
